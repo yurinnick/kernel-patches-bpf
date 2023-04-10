@@ -1931,15 +1931,16 @@ __bpf_kfunc void *bpf_refcount_acquire_impl(void *p__refcounted_kptr, void *meta
 	return (void *)p__refcounted_kptr;
 }
 
+#define __init_field_infer_size(field_type, addr)\
+	__bpf_obj_init_field(field_type, btf_field_type_size(field_type), addr)
+
 static int __bpf_list_add(struct bpf_list_node *node, struct bpf_list_head *head,
 			  bool tail, struct btf_record *rec, u64 off)
 {
 	struct list_head *n = (void *)node, *h = (void *)head;
 
 	if (unlikely(!h->next))
-		INIT_LIST_HEAD(h);
-	if (unlikely(!n->next))
-		INIT_LIST_HEAD(n);
+		__init_field_infer_size(BPF_LIST_HEAD, h);
 	if (!list_empty(n)) {
 		/* Only called from BPF prog, no need to migrate_disable */
 		__bpf_obj_drop_impl(n - off, rec);
@@ -1976,13 +1977,15 @@ static struct bpf_list_node *__bpf_list_del(struct bpf_list_head *head, bool tai
 	struct list_head *n, *h = (void *)head;
 
 	if (unlikely(!h->next))
-		INIT_LIST_HEAD(h);
+		__init_field_infer_size(BPF_LIST_HEAD, h);
 	if (list_empty(h))
 		return NULL;
 	n = tail ? h->prev : h->next;
 	list_del_init(n);
 	return (struct bpf_list_node *)n;
 }
+
+#undef __init_field_infer_size
 
 __bpf_kfunc struct bpf_list_node *bpf_list_pop_front(struct bpf_list_head *head)
 {
@@ -1999,9 +2002,6 @@ __bpf_kfunc struct bpf_rb_node *bpf_rbtree_remove(struct bpf_rb_root *root,
 {
 	struct rb_root_cached *r = (struct rb_root_cached *)root;
 	struct rb_node *n = (struct rb_node *)node;
-
-	if (!n->__rb_parent_color)
-		RB_CLEAR_NODE(n);
 
 	if (RB_EMPTY_NODE(n))
 		return NULL;
@@ -2021,9 +2021,6 @@ static int __bpf_rbtree_add(struct bpf_rb_root *root, struct bpf_rb_node *node,
 	struct rb_node *parent = NULL, *n = (struct rb_node *)node;
 	bpf_callback_t cb = (bpf_callback_t)less;
 	bool leftmost = true;
-
-	if (!n->__rb_parent_color)
-		RB_CLEAR_NODE(n);
 
 	if (!RB_EMPTY_NODE(n)) {
 		/* Only called from BPF prog, no need to migrate_disable */
