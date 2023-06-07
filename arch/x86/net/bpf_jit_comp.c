@@ -1878,20 +1878,16 @@ static void save_regs(const struct btf_func_model *m, u8 **prog, int nr_regs,
 
 		if (i <= 5) {
 			/* copy function arguments from regs into stack */
-			emit_stx(prog, bytes_to_bpf_size(arg_size),
-				 BPF_REG_FP,
+			emit_stx(prog, BPF_DW, BPF_REG_FP,
 				 i == 5 ? X86_REG_R9 : BPF_REG_1 + i,
 				 -(stack_size - i * 8));
 		} else {
 			/* copy function arguments from origin stack frame
 			 * into current stack frame.
 			 */
-			emit_ldx(prog, bytes_to_bpf_size(arg_size),
-				 BPF_REG_0, BPF_REG_FP,
+			emit_ldx(prog, BPF_DW, BPF_REG_0, BPF_REG_FP,
 				 (i - 6) * 8 + 0x18);
-			emit_stx(prog, bytes_to_bpf_size(arg_size),
-				 BPF_REG_FP,
-				 BPF_REG_0,
+			emit_stx(prog, BPF_DW, BPF_REG_FP, BPF_REG_0,
 				 -(stack_size - i * 8));
 		}
 
@@ -1918,7 +1914,7 @@ static void restore_regs(const struct btf_func_model *m, u8 **prog, int nr_regs,
 			next_same_struct = !next_same_struct;
 		}
 
-		emit_ldx(prog, bytes_to_bpf_size(arg_size),
+		emit_ldx(prog, BPF_DW,
 			 i == 5 ? X86_REG_R9 : BPF_REG_1 + i,
 			 BPF_REG_FP,
 			 -(stack_size - i * 8));
@@ -1949,12 +1945,9 @@ static void prepare_origin_stack(const struct btf_func_model *m, u8 **prog,
 		}
 
 		if (i > 5) {
-			emit_ldx(prog, bytes_to_bpf_size(arg_size),
-				 BPF_REG_0, BPF_REG_FP,
+			emit_ldx(prog, BPF_DW, BPF_REG_0, BPF_REG_FP,
 				 (i - 6) * 8 + 0x18);
-			emit_stx(prog, bytes_to_bpf_size(arg_size),
-				 BPF_REG_FP,
-				 BPF_REG_0,
+			emit_stx(prog, BPF_DW, BPF_REG_FP, BPF_REG_0,
 				 -(stack_size - (i - 6) * 8));
 		}
 
