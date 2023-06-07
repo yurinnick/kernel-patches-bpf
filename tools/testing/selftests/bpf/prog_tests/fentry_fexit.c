@@ -31,10 +31,12 @@ void test_fentry_fexit(void)
 	ASSERT_OK(err, "ipv6 test_run");
 	ASSERT_OK(topts.retval, "ipv6 test retval");
 
+	ASSERT_OK(trigger_module_test_read(1), "trigger_read");
+
 	fentry_res = (__u64 *)fentry_skel->bss;
 	fexit_res = (__u64 *)fexit_skel->bss;
 	printf("%lld\n", fentry_skel->bss->test1_result);
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 10; i++) {
 		ASSERT_EQ(fentry_res[i], 1, "fentry result");
 		ASSERT_EQ(fexit_res[i], 1, "fexit result");
 	}

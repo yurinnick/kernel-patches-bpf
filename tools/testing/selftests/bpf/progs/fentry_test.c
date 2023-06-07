@@ -77,3 +77,24 @@ int BPF_PROG(test8, struct bpf_fentry_test_t *arg)
 		test8_result = 1;
 	return 0;
 }
+
+__u64 test9_result = 0;
+SEC("fentry/bpf_testmod_fentry_test7")
+int BPF_PROG(test9, __u64 a, void *b, short c, int d, void *e, __u64 f,
+	     __u64 g)
+{
+	test9_result = a == 16 && b == (void *)17 && c == 18 && d == 19 &&
+		e == (void *)20 && f == 21 && g == 22;
+	return 0;
+}
+
+__u64 test10_result = 0;
+SEC("fentry/bpf_testmod_fentry_test12")
+int BPF_PROG(test10, __u64 a, void *b, short c, int d, void *e, __u64 f,
+	     __u64 g, __u64 h, __u64 i, __u64 j, __u64 k, __u64 l)
+{
+	test10_result = a == 16 && b == (void *)17 && c == 18 && d == 19 &&
+		e == (void *)20 && f == 21 && g == 22 && h == 23 &&
+		i == 24 && j == 25 && k == 26 && l == 27;
+	return 0;
+}

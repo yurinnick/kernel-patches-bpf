@@ -191,6 +191,19 @@ noinline int bpf_testmod_fentry_test3(char a, int b, u64 c)
 	return a + b + c;
 }
 
+noinline int bpf_testmod_fentry_test7(u64 a, void *b, short c, int d,
+				      void *e, u64 f, u64 g)
+{
+	return a + (long)b + c + d + (long)e + f + g;
+}
+
+noinline int bpf_testmod_fentry_test12(u64 a, void *b, short c, int d,
+				       void *e, u64 f, u64 g, u64 h,
+				       u64 i, u64 j, u64 k, u64 l)
+{
+	return a + (long)b + c + d + (long)e + f + g + h + i + j + k + l;
+}
+
 __diag_pop();
 
 int bpf_testmod_fentry_ok;
@@ -245,7 +258,11 @@ bpf_testmod_test_read(struct file *file, struct kobject *kobj,
 
 	if (bpf_testmod_fentry_test1(1) != 2 ||
 	    bpf_testmod_fentry_test2(2, 3) != 5 ||
-	    bpf_testmod_fentry_test3(4, 5, 6) != 15)
+	    bpf_testmod_fentry_test3(4, 5, 6) != 15 ||
+	    bpf_testmod_fentry_test7(16, (void *)17, 18, 19, (void *)20,
+				     21, 22) != 133 ||
+	    bpf_testmod_fentry_test12(16, (void *)17, 18, 19, (void *)20,
+				      21, 22, 23, 24, 25, 26, 27) != 258)
 		goto out;
 
 	bpf_testmod_fentry_ok = 1;

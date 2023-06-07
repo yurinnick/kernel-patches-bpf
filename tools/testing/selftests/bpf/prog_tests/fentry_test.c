@@ -24,6 +24,8 @@ static int fentry_test(struct fentry_test_lskel *fentry_skel)
 	ASSERT_OK(err, "test_run");
 	ASSERT_EQ(topts.retval, 0, "test_run");
 
+	ASSERT_OK(trigger_module_test_read(1), "trigger_read");
+
 	result = (__u64 *)fentry_skel->bss;
 	for (i = 0; i < sizeof(*fentry_skel->bss) / sizeof(__u64); i++) {
 		if (!ASSERT_EQ(result[i], 1, "fentry_result"))
