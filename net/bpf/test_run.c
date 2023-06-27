@@ -561,6 +561,13 @@ __bpf_kfunc int bpf_modify_return_test(int a, int *b)
 	return a + *b;
 }
 
+__bpf_kfunc int bpf_modify_return_test2(int a, int *b, short c, int d,
+					void *e, char f, int g)
+{
+	*b += 1;
+	return a + *b + c + d + (long)e + f + g;
+}
+
 int noinline bpf_fentry_shadow_test(int a)
 {
 	return a + 1;
@@ -596,8 +603,12 @@ __diag_pop();
 
 BTF_SET8_START(bpf_test_modify_return_ids)
 BTF_ID_FLAGS(func, bpf_modify_return_test)
+BTF_ID_FLAGS(func, bpf_modify_return_test2)
 BTF_ID_FLAGS(func, bpf_fentry_test1, KF_SLEEPABLE)
 BTF_SET8_END(bpf_test_modify_return_ids)
+
+BTF_ID_LIST(bpf_modify_return_test_id)
+BTF_ID(func, bpf_modify_return_test)
 
 static const struct btf_kfunc_id_set bpf_test_modify_return_set = {
 	.owner = THIS_MODULE,
@@ -661,9 +672,15 @@ int bpf_prog_test_run_tracing(struct bpf_prog *prog,
 			goto out;
 		break;
 	case BPF_MODIFY_RETURN:
-		ret = bpf_modify_return_test(1, &b);
-		if (b != 2)
-			side_effect = 1;
+		if (prog->aux->attach_btf_id == *bpf_modify_return_test_id) {
+			ret = bpf_modify_return_test(1, &b);
+			if (b != 2)
+				side_effect = 1;
+		} else {
+			ret = bpf_modify_return_test2(1, &b, 3, 4, (void *)5, 6, 7);
+			if (b != 2)
+				side_effect = 1;
+		}
 		break;
 	default:
 		goto out;
