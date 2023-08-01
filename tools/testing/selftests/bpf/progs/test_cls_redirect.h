@@ -12,6 +12,9 @@
 #include <linux/ipv6.h>
 #include <linux/udp.h>
 
+#define __builtin_offsetofend(TYPE, MEMBER) \
+	(__builtin_offsetof(TYPE, MEMBER) + sizeof((((TYPE *)0)->MEMBER)))
+
 struct gre_base_hdr {
 	uint16_t flags;
 	uint16_t protocol;

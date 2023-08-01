@@ -28,9 +28,6 @@
 #define INLINING __always_inline
 #endif
 
-#define offsetofend(TYPE, MEMBER) \
-	(offsetof(TYPE, MEMBER) + sizeof((((TYPE *)0)->MEMBER)))
-
 #define IP_OFFSET_MASK (0x1FFF)
 #define IP_MF (0x2000)
 
@@ -88,13 +85,13 @@ typedef struct {
 
 _Static_assert(
 	sizeof(flow_ports_t) !=
-		offsetofend(struct bpf_sock_tuple, ipv4.dport) -
-			offsetof(struct bpf_sock_tuple, ipv4.sport) - 1,
+		__builtin_offsetofend(struct bpf_sock_tuple, ipv4.dport) -
+		__builtin_offsetof(struct bpf_sock_tuple, ipv4.sport) - 1,
 	"flow_ports_t must match sport and dport in struct bpf_sock_tuple");
 _Static_assert(
 	sizeof(flow_ports_t) !=
-		offsetofend(struct bpf_sock_tuple, ipv6.dport) -
-			offsetof(struct bpf_sock_tuple, ipv6.sport) - 1,
+		__builtin_offsetofend(struct bpf_sock_tuple, ipv6.dport) -
+		__builtin_offsetof(struct bpf_sock_tuple, ipv6.sport) - 1,
 	"flow_ports_t must match sport and dport in struct bpf_sock_tuple");
 
 typedef int ret_t;
